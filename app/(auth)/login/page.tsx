@@ -6,7 +6,7 @@ import {useRouter} from 'next/navigation';
 
 import {motion} from 'framer-motion';
 
-import {Chrome, Github, Loader2 as Spinner} from "lucide-react";
+import {Chrome, Eye, EyeOff, Github, Loader2} from "lucide-react";
 
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -19,6 +19,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
@@ -44,7 +46,7 @@ export default function LoginPage() {
         throw new Error(errorData.message || 'Failed to log in');
       }
 
-      await router.push('/dashboard');
+      router.push('/dashboard');
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -59,7 +61,6 @@ export default function LoginPage() {
   return (
     <div
       className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      {/* Animated background elements */}
       <motion.div
         className="absolute top-20 left-20 h-32 w-32 rounded-full bg-indigo-100/50 blur-xl"
         animate={{
@@ -122,21 +123,39 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  className="focus-visible:ring-2 focus-visible:ring-offset-2"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="focus-visible:ring-2 focus-visible:ring-offset-2 pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground"/>
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground"/>
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    </span>
+                  </Button>
+                </div>
               </div>
 
               <Button type="submit" disabled={loading} className="w-full mt-2">
-                {loading && <Spinner className="mr-2 h-4 w-4 animate-spin"/>}
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                 Iniciar Sesión
               </Button>
             </form>
@@ -157,7 +176,7 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-4 w-full">
               <Button variant="outline" disabled={loading}>
                 {loading ? (
-                  <Spinner className="mr-2 h-4 w-4 animate-spin"/>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
                 ) : (
                   <Chrome className="mr-2 h-4 w-4"/>
                 )}
@@ -165,7 +184,7 @@ export default function LoginPage() {
               </Button>
               <Button variant="outline" disabled={loading}>
                 {loading ? (
-                  <Spinner className="mr-2 h-4 w-4 animate-spin"/>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
                 ) : (
                   <Github className="mr-2 h-4 w-4"/>
                 )}
@@ -175,8 +194,12 @@ export default function LoginPage() {
 
             <p className="text-sm text-muted-foreground mt-4">
               ¿No tienes una cuenta?{' '}
-              <Button variant="link" className="p-0 text-sm h-auto">
-                Crear Cuenta
+              <Button
+                variant="link"
+                className="p-0 text-sm h-auto cursor-pointer"
+                onClick={() => router.push('/signup')}
+              >
+                Regístrate
               </Button>
             </p>
           </CardFooter>
