@@ -22,6 +22,47 @@ export const signIn = async (email: string, password: string) => {
   }
 };
 
+export const signUp = async (email: string, password: string, name: string) => {
+  try {
+    const supabase = await createClient();
+    const {data, error} = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+        },
+      },
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      const {error: profileError} = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: data.user.id,
+            email,
+            name,
+          },
+        ]);
+
+      if (profileError) throw profileError;
+    }
+
+    return data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Sign up failed:", error.message);
+      throw new Error(error.message);
+    } else {
+      console.error("Unknown error during sign up");
+      throw new Error("An unknown error occurred");
+    }
+  }
+};
+
 export const signOut = async () => {
   try {
     const supabase = await createClient();
