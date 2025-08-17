@@ -54,7 +54,7 @@ export default function SignupForm({
       if (result?.error) {
         setError(result.error);
       } else if (result?.success) {
-        router.push('/');
+        router.push('/monitor');
       }
     } catch (err) {
       setError('Ocurrió un error desconocido.');
@@ -113,16 +113,16 @@ export default function SignupForm({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-
+            {/* Desde aqui empieza el formulario de registro, se pueden editar cada campo */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nombre</Label>
+                <Label htmlFor="name">Nombre y Apellido</Label>
                 <Input
                   id="name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Tu nombre"
+                  placeholder="Tu nombre completo"
                   required
                   className="focus-visible:ring-2 focus-visible:ring-offset-2"
                 />
@@ -230,7 +230,7 @@ export default function SignupForm({
           </CardContent>
 
           <CardFooter className="flex flex-col items-center gap-2">
-            <div className="relative w-full">
+            {/* <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t"/>
               </div>
@@ -258,7 +258,7 @@ export default function SignupForm({
                 )}
                 GitHub
               </Button>
-            </div>
+            </div> */}
 
             <p className="text-sm text-muted-foreground mt-4">
               ¿Ya tienes una cuenta?{' '}
