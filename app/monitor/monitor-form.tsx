@@ -35,8 +35,6 @@ type Mode = "preset" | "custom";
 
 type MonitorFormProps = {
   initialData: FeedRow[];
-  refreshAction?: (formData: FormData) => Promise<void> | void;
-  loadOlderAction?: (formData: FormData) => Promise<void> | void;
 };
 
 const channelLabels = {
@@ -54,8 +52,6 @@ const chartConfig: ChartConfig = {
 
 export default function MonitorForm({
                                       initialData,
-                                      refreshAction,
-                                      loadOlderAction,
                                     }: MonitorFormProps) {
   // Modo y rangos
   const [mode, setMode] = React.useState<Mode>("preset");
