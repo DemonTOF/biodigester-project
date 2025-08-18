@@ -22,7 +22,7 @@ export type FeedRow = {
   ts_iso: string;
   field1: number | null;
   field2: number | null;
-  field3: number | null;
+  field3?: number | null;
   field4?: number | null;
   field5?: number | null;
   field6?: number | null;
@@ -38,16 +38,13 @@ type MonitorFormProps = {
 };
 
 const channelLabels = {
-  field1: "Concentacion Metano (ppm)",
-  field2: "Concetración Metano (ppm)",
-  field3: "pH",
-  field8: "Alertas",
+  field1: "Concentracion Metano (ppm)",
+  field2: "Nivel pH",
 } as const;
 
 const chartConfig: ChartConfig = {
-  field1: {label: channelLabels.field1, color: "hsl(var(--chart-1))"},
-  field2: {label: channelLabels.field2, color: "hsl(var(--chart-2))"},
-  field3: {label: channelLabels.field3, color: "hsl(var(--chart-3))"},
+  field1: {label: channelLabels.field1, color: "red"},
+  field2: {label: channelLabels.field2, color: "blue"},
 };
 
 export default function MonitorForm({
@@ -64,7 +61,6 @@ export default function MonitorForm({
   // Visibilidad de series
   const [showF1, setShowF1] = React.useState(true);
   const [showF2, setShowF2] = React.useState(true);
-  const [showF3, setShowF3] = React.useState(true);
 
   // Datos filtrados según modo
   const filtered = React.useMemo(() => {
@@ -85,7 +81,6 @@ export default function MonitorForm({
       time: r.ts_iso,
       field1: r.field1 ?? undefined,
       field2: r.field2 ?? undefined,
-      field3: r.field3 ?? undefined,
     }));
   }, [filtered]);
 
@@ -162,12 +157,6 @@ export default function MonitorForm({
                   {chartConfig.field2?.label ?? "field2"}
                 </Label>
               </div>
-              <div className="flex items-center gap-2">
-                <Switch id="f3" checked={showF3} onCheckedChange={setShowF3}/>
-                <Label htmlFor="f3" className="cursor-pointer text-sm">
-                  {chartConfig.field3?.label ?? "field3"}
-                </Label>
-              </div>
             </div>
 
             <div className="h-6 w-px bg-muted mx-2"/>
@@ -222,7 +211,7 @@ export default function MonitorForm({
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data} margin={{top: 8, right: 16, bottom: 8, left: 0}}>
                     <defs>
-                      {["field1", "field2", "field3"].map((k) => (
+                      {["field1", "field2"].map((k) => (
                         <linearGradient id={`fill-${k}`} x1="0" y1="0" x2="0" y2="1" key={k}>
                           <stop offset="5%" stopColor={cssVar(seriesColor(k))} stopOpacity={0.4}/>
                           <stop offset="95%" stopColor={cssVar(seriesColor(k))} stopOpacity={0.05}/>
@@ -268,18 +257,6 @@ export default function MonitorForm({
                         name={chartConfig.field2?.label}
                         stroke={cssVar(seriesColor("field2"))}
                         fill={`url(#fill-field2)`}
-                        strokeWidth={2}
-                        dot={false}
-                        isAnimationActive={false}
-                      />
-                    )}
-                    {showF3 && (
-                      <Area
-                        type="monotone"
-                        dataKey="field3"
-                        name={chartConfig.field3?.label}
-                        stroke={cssVar(seriesColor("field3"))}
-                        fill={`url(#fill-field3)`}
                         strokeWidth={2}
                         dot={false}
                         isAnimationActive={false}
@@ -335,7 +312,7 @@ function downsample<T>(arr: T[], maxPoints: number): T[] {
 
 function formatTimeTick(iso: string) {
   const d = new Date(iso);
-  return `${pad(d.getUTCMonth() + 1)}/${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
 
 function pad(n: number) {
