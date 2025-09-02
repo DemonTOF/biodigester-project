@@ -138,20 +138,24 @@ export async function ingestLatestFeeds(results = 20): Promise<IngestLatestResul
     // 3) mapear y filtrar nuevos
     const rows = (data.feeds || [])
       .filter((f) => f.entry_id > maxSaved)
-      .map((f) => ({
-        channel_id: data.channel?.id ?? channelId,
-        entry_id: f.entry_id,
-        ts_iso: new Date(f.created_at).toISOString(),
-        field1: toNum(f.field1),
-        field2: toNum(f.field2),
-        field3: toNum(f.field3),
-        field4: toNum(f.field4),
-        field5: toNum(f.field5),
-        field6: toNum(f.field6),
-        field7: toNum(f.field7),
-        field8: toNum(f.field8),
-        raw: f ? (JSON.parse(JSON.stringify(f)) as object) : null,
-      }));
+      .map((f) => {
+        const d = new Date(f.created_at); // convertimos created_at a Date
+        d.setHours(d.getHours() - 3);     // restamos 3 horas
+        return {
+          channel_id: data.channel?.id ?? channelId,
+          entry_id: f.entry_id,
+          ts_iso: d.toISOString(),
+          field1: toNum(f.field1),
+          field2: toNum(f.field2),
+          field3: toNum(f.field3),
+          field4: toNum(f.field4),
+          field5: toNum(f.field5),
+          field6: toNum(f.field6),
+          field7: toNum(f.field7),
+          field8: toNum(f.field8),
+          raw: f ? (JSON.parse(JSON.stringify(f)) as object) : null,
+        };
+      });
 
     if (rows.length === 0) {
       return {ok: true, requested: results, inserted: 0, skipped: results, maxSaved, newestFetched: null};
@@ -207,20 +211,24 @@ export async function ingestOlderFeeds(batch = 100): Promise<BackfillResult> {
 
     const data = (await res.json()) as ThingSpeakResponse;
 
-    const rows = (data.feeds || []).map((f) => ({
-      channel_id: data.channel?.id ?? channelId,
-      entry_id: f.entry_id,
-      ts_iso: new Date(f.created_at).toISOString(),
-      field1: toNum(f.field1),
-      field2: toNum(f.field2),
-      field3: toNum(f.field3),
-      field4: toNum(f.field4),
-      field5: toNum(f.field5),
-      field6: toNum(f.field6),
-      field7: toNum(f.field7),
-      field8: toNum(f.field8),
-      raw: f ? (JSON.parse(JSON.stringify(f)) as object) : null,
-    }));
+    const rows = (data.feeds || []).map((f) => {
+      const d = new Date(f.created_at);
+      d.setHours(d.getHours() - 3);
+      return{
+        channel_id: data.channel?.id ?? channelId,
+        entry_id: f.entry_id,
+        ts_iso: d.toISOString(),
+        field1: toNum(f.field1),
+        field2: toNum(f.field2),
+        field3: toNum(f.field3),
+        field4: toNum(f.field4),
+        field5: toNum(f.field5),
+        field6: toNum(f.field6),
+        field7: toNum(f.field7),
+        field8: toNum(f.field8),
+        raw: f ? (JSON.parse(JSON.stringify(f)) as object) : null,
+      };
+    });
 
     if (rows.length === 0) {
       return {ok: true, inserted: 0, fetched: 0, reachedEnd: true, newOldest: null};
