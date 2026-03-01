@@ -4,6 +4,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/widgets/shad_card.dart';
 import '../controllers/monitor_controller.dart';
+import 'widgets/tabbed_date_time_picker.dart';
 
 class MonitorPage extends ConsumerWidget {
   const MonitorPage({super.key});
@@ -14,37 +15,21 @@ class MonitorPage extends ConsumerWidget {
     bool isStart,
     DateTime initialDate,
   ) async {
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? pickedDateTime = await showDialog<DateTime>(
       context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2101),
+      builder: (context) =>
+          TabbedDateTimePickerDialog(initialDateTime: initialDate),
     );
 
-    if (pickedDate != null && context.mounted) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(initialDate),
-      );
-
-      if (pickedTime != null && context.mounted) {
-        final newDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
-        );
-
-        if (isStart) {
-          ref
-              .read(monitorControllerProvider.notifier)
-              .updateDateRange(start: newDateTime);
-        } else {
-          ref
-              .read(monitorControllerProvider.notifier)
-              .updateDateRange(end: newDateTime);
-        }
+    if (pickedDateTime != null && context.mounted) {
+      if (isStart) {
+        ref
+            .read(monitorControllerProvider.notifier)
+            .updateDateRange(start: pickedDateTime);
+      } else {
+        ref
+            .read(monitorControllerProvider.notifier)
+            .updateDateRange(end: pickedDateTime);
       }
     }
   }
@@ -72,53 +57,97 @@ class MonitorPage extends ConsumerWidget {
             child: Column(
               children: [
                 ShadCard(
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: ListTile(
-                          title: const Text(
-                            'Desde',
-                            style: TextStyle(fontSize: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ListTile(
+                              title: const Text(
+                                'Desde',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              subtitle: Text(
+                                '${filter.startDate.day}/${filter.startDate.month}/${filter.startDate.year} ${filter.startDate.hour}:${filter.startDate.minute.toString().padLeft(2, '0')}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onTap: () => _selectDateTime(
+                                context,
+                                ref,
+                                true,
+                                filter.startDate,
+                              ),
+                            ),
                           ),
-                          subtitle: Text(
-                            '${filter.startDate.day}/${filter.startDate.month}/${filter.startDate.year} ${filter.startDate.hour}:${filter.startDate.minute.toString().padLeft(2, '0')}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          Expanded(
+                            child: ListTile(
+                              title: const Text(
+                                'Hasta',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              subtitle: Text(
+                                '${filter.endDate.day}/${filter.endDate.month}/${filter.endDate.year} ${filter.endDate.hour}:${filter.endDate.minute.toString().padLeft(2, '0')}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onTap: () => _selectDateTime(
+                                context,
+                                ref,
+                                false,
+                                filter.endDate,
+                              ),
+                            ),
                           ),
-                          onTap: () => _selectDateTime(
-                            context,
-                            ref,
-                            true,
-                            filter.startDate,
-                          ),
-                        ),
+                        ],
                       ),
-                      Expanded(
-                        child: ListTile(
-                          title: const Text(
-                            'Hasta',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          subtitle: Text(
-                            '${filter.endDate.day}/${filter.endDate.month}/${filter.endDate.year} ${filter.endDate.hour}:${filter.endDate.minute.toString().padLeft(2, '0')}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          onTap: () => _selectDateTime(
-                            context,
-                            ref,
-                            false,
-                            filter.endDate,
-                          ),
+                      const Divider(height: 1),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () {
+                                ref
+                                    .read(monitorControllerProvider.notifier)
+                                    .reset();
+                              },
+                              icon: const Icon(Icons.history),
+                              label: const Text('Restablecer'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.grey[700],
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                ref
+                                    .read(monitorControllerProvider.notifier)
+                                    .refresh();
+                              },
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Refrescar'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () {
+                                ref
+                                    .read(monitorControllerProvider.notifier)
+                                    .exportToCsv();
+                              },
+                              icon: const Icon(Icons.download),
+                              label: const Text('CSV'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.green[700],
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          ref
-                              .read(monitorControllerProvider.notifier)
-                              .refresh();
-                        },
-                        icon: const Icon(Icons.refresh),
-                        color: Theme.of(context).primaryColor,
-                        tooltip: 'Actualizar datos',
                       ),
                     ],
                   ),
@@ -186,11 +215,20 @@ class MonitorPage extends ConsumerWidget {
             enable: true,
             header: '',
             canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+          ),
+          zoomPanBehavior: ZoomPanBehavior(
+            enablePinching: true,
+            enableDoubleTapZooming: true,
+            enablePanning: true,
+            enableSelectionZooming: true,
+            zoomMode: ZoomMode.x,
           ),
           primaryXAxis: DateTimeAxis(
             minimum: startDate,
             maximum: endDate,
             dateFormat: dateFormat,
+            enableAutoIntervalOnZooming: true,
             majorGridLines: MajorGridLines(
               width: 1,
               color: Colors.grey.withOpacity(0.1),
@@ -211,6 +249,7 @@ class MonitorPage extends ConsumerWidget {
               color: color.withOpacity(0.1),
               borderColor: color,
               borderWidth: 3,
+              enableTooltip: true,
             ),
           ],
         ),

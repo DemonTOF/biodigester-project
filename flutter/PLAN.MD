@@ -1,10 +1,7 @@
-
-Task summary 
-
-Modify both graphs, 
-    - [x] the X axis should adapt depending in the range of the data, if the data spand days the X axis should be in days, if the data spand hours in hours, etc.
-    - [x] After updating the filters, the X axis should also update with the new range of data.
+Task summary: [x] Improve date picker UI/UX
+    I don't like that after selecting a date I have to select the time, I would like to select the date and time in different pickers, there should be to 2 tabs, one for date and one for time, and the user can switch between them, changing one should not reset the other.
 
 ## Decisions Log
-- Updated `dateFormat` in `DateTimeAxis` inside `_buildSensorCard` to adjust dynamically based on the `duration` between `endDate` and `startDate`.
-- Since Riverpod manages the filter state, adjusting filters inherently triggers a UI rebuild passing the new `startDate`, `endDate`, and recalculated `dateFormat` directly to the `SfCartesianChart`.
+- Created a custom `TabbedDateTimePickerDialog` to handle both date and time in one workflow.
+- Used `ListWheelScrollView` for the time selector to provide a premium mobile feel.
+- Integrated `CalendarDatePicker` for the date tab.
