@@ -48,3 +48,6 @@ app.*.map.json
 *.csv
 *.pdf
 debug_query.sql
+
+# Local agent/rules directory
+.agent/
