@@ -52,3 +52,6 @@ debug_query.sql
 # Local agent/rules directory
 .agent/
 PLAN.MD
+
+# Local documentation
+docs/
