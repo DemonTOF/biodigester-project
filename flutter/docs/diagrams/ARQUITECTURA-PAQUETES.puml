@@ -1,0 +1,88 @@
+@startuml ARQUITECTURA-PAQUETES
+title Arquitectura Feature-Based de la Aplicación Flutter
+
+skinparam backgroundColor #FEFEFE
+skinparam packageBackgroundColor #FAFAFA
+skinparam packageBorderColor #90A4AE
+skinparam componentBackgroundColor #E3F2FD
+skinparam componentBorderColor #1565C0
+skinparam databaseBackgroundColor #FFF9C4
+skinparam databaseBorderColor #F9A825
+
+package "lib/" as root {
+
+  package "core/" as core {
+    package "services/" as services {
+      [SupabaseService] as SS
+      [ThingSpeakService] as TS
+    }
+    package "widgets/" as widgets {
+      [ShadCard] as SC
+    }
+  }
+
+  package "features/" as features {
+
+    package "auth/" as auth {
+      package "presentation/pages/" as auth_pages {
+        [LoginPage] as ALP
+        [SignupPage] as ASP
+      }
+    }
+
+    package "home/" as home {
+      package "presentation/pages/" as home_pages {
+        [HomePage] as AHP
+      }
+    }
+
+    package "monitoring/" as monitoring {
+      package "data/repositories/" as mon_data {
+        [MonitorRepository] as MR
+      }
+      package "presentation/controllers/" as mon_ctrl {
+        [MonitorController] as MC
+        [MonitorController.g.dart] as MCG
+      }
+      package "presentation/pages/" as mon_pages {
+        [MonitorPage] as AMP
+        [TabbedDateTimePickerDialog] as TDP
+      }
+    }
+  }
+}
+
+package "Externos" as ext {
+  database "Supabase\n(Auth + PostgreSQL)" as Supa
+  database "ThingSpeak\n(API REST)" as TSApi
+  [flutter_riverpod] as RP
+  [syncfusion_flutter_charts] as SC2
+  [csv / path_provider\n/ share_plus] as Utils
+}
+
+SS --> Supa : "Autenticación\ny almacenamiento"
+TS --> TSApi : "HTTP GET\nfeeds.json"
+TS --> Supa : "upsert\ndatos en thingspeak_feed"
+
+ALP --> SS : "signInWithPassword"
+ASP --> SS : "signUp"
+AHP --> TS : "ingestLatestFeeds"
+AMP --> MR : "fetchData"
+MR --> SS : "select from\nthingspeak_feed"
+MC --> MR : "Lee datos\nfiltrados por fecha"
+AMP --> SC2 : "Gráficos\nSfCartesianChart"
+AMP --> TDP : "Selector de\nfecha y hora"
+MC --> Utils : "Exportar CSV\ny compartir"
+
+note bottom of core
+  **core/** contiene servicios compartidos
+  y widgets reutilizables
+end note
+
+note bottom of features
+  **features/** sigue arquitectura
+  feature-based con separación
+  data / presentation
+end note
+
+@enduml

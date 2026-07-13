@@ -1,0 +1,54 @@
+@startuml FLUJO-PRINCIPAL
+title Flujo Principal de la Aplicación - Navegación entre Pantallas
+
+skinparam backgroundColor #FEFEFE
+skinparam componentBackgroundColor #E8F5E9
+skinparam componentBorderColor #2E7D32
+skinparam packageBackgroundColor #F3E5F5
+skinparam packageBorderColor #7B1FA2
+
+package "Aplicación Biodigester Mobile" {
+  [Login Page] as LP
+  [Signup Page] as SP
+  [Main Tabs] as MT
+
+  package "Tab 1: Ingestion" {
+    [HomePage] as HP
+    [Ingerir últimos registros] as IL
+    [Backfill histórico] as BF
+  }
+
+  package "Tab 2: Monitoreo" {
+    [MonitorPage] as MP
+    [Fechas Desde/Hasta] as FH
+    [Selector Fecha/Hora\nTabbedDateTimePicker] as DT
+    [Gráfico Metano] as GM
+    [Gráfico pH] as GP
+    [Exportar CSV] as EC
+  }
+}
+
+LP --> MT : "Autenticación\nexitosa"
+SP --> LP : "Registro\nexitoso"
+MT --> HP : "Tab 1:\nIngestion"
+MT --> MP : "Tab 2:\nMonitoreo"
+
+HP --> IL : "Botón:\nIngerir últimos"
+HP --> BF : "Botón:\nBackfill (Próximamente)"
+
+MP --> FH : "Seleccionar\nrango de fechas"
+FH --> DT : "Abrir selector\nfecha/hora"
+MP --> GM : "Gráfico\nMetano (ppm)"
+MP --> GP : "Gráfico\npH"
+MP --> EC : "Botón:\nExportar CSV"
+
+note bottom of MT
+  **BottomNavigationBar**
+  - Ingestion (icon: download)
+  - Monitoreo (icon: show_chart)
+  
+  **IndexedStack** mantiene
+  el estado de ambas pestañas
+end note
+
+@enduml

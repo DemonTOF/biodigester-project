@@ -1,0 +1,5 @@
+# Reemplazo de Supabase por base de datos local (drift) con sincronización directa a ThingSpeak
+
+El backend Supabase dejó de funcionar, así que se elimina por completo (auth incluida) y se pasa a un modelo offline-first: los datos de ThingSpeak se descargan directamente a una base de datos SQLite local (drift) y la app lee desde ahí. Se eligió drift sobre sqflite/hive por el tipado fuerte y las consultas SQL naturales (rango de fechas). La sincronización incremental usa `entry_id` como marca de agua alta (`lastEntryId` en una tabla `syncMeta`).
+
+**Limitación verificada de la API de ThingSpeak (canal 2621081):** el canal ignora los parámetros `start_id` y `end_id` y siempre devuelve sus `results` feeds más recientes (una ventana rodante limitada a 8000, hoy entry_ids 77959–85958). No es posible paginar hacia atrás para recuperar historial anterior. Por eso la descarga es una sola petición `results=8000`, y la sincronización incremental se hace en código filtrando `entry_id > lastEntryId`. "Todo el historial disponible" = los últimos 8000 feeds.

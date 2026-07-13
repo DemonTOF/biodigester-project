@@ -1,0 +1,84 @@
+@startuml FLUJO-DATOS
+title Flujo de Datos - ThingSpeak → Supabase → UI
+
+skinparam backgroundColor #FEFEFE
+skinparam sequenceLifeLineBorderColor #1565C0
+skinparam sequenceParticipantBackgroundColor #E3F2FD
+skinparam sequenceParticipantBorderColor #1565C0
+skinparam sequenceArrowColor #2E7D32
+
+actor "Usuario" as U
+participant "HomePage\n(Ingestion)" as HP
+participant "ThingSpeakService" as TSS
+participant "ThingSpeak\nAPI REST" as TSA
+participant "Supabase\nDatabase" as SDB
+participant "MonitorPage\n(Monitoreo)" as MP
+participant "MonitorRepository" as MR
+participant "MonitorController" as MC
+
+== Ingestión de Datos ==
+
+U -> HP : Presiona "Ingerir últimos"
+activate HP
+HP -> TSS : ingestLatestFeeds()
+activate TSS
+
+TSS -> SDB : getMaxEntryId()\nSELECT entry_id MAX
+activate SDB
+SDB --> TSS : último entry_id guardado
+deactivate SDB
+
+TSS -> TSA : GET /channels/{id}/feeds.json\n?results=20&sort=desc
+activate TSA
+TSA --> TSS : JSON con feeds[]\n(últimos 20 registros)
+deactivate TSA
+
+TSS -> TSS : Filtrar feeds donde\nentry_id > maxSaved
+TSS -> TSS : Mapear field1-field8\ny convertir a double
+
+TSS -> SDB : upsert(rows)\nINSERT/UPDATE thingspeak_feed
+activate SDB
+SDB --> TSS : Confirmación
+deactivate SDB
+
+TSS --> HP : {ok: true, inserted: N}
+deactivate TSS
+HP --> U : Mostrar resultado\n(éxito/error)
+deactivate HP
+
+== Consulta de Datos ==
+
+U -> MP : Selecciona rango\nde fechas (Desde/Hasta)
+activate MP
+MP -> MC : updateDateRange(start, end)
+activate MC
+MC -> MR : fetchData(startDate, endDate)
+activate MR
+MR -> SDB : SELECT ts_iso, field1, field2\nFROM thingspeak_feed\nWHERE ts_iso BETWEEN\nstart AND end\nORDER BY ts_iso ASC
+activate SDB
+SDB --> MR : Lista de registros
+deactivate SDB
+MR --> MC : List<Map<String, dynamic>>
+deactivate MR
+MC -> MC : Actualizar estado\nAsyncValue.data(MonitorDataState)
+MC --> MP : MonitorDataState\n(filter + data)
+deactivate MC
+
+MP -> MP : Renderizar gráficos\nSfCartesianChart
+MP --> U : Mostrar gráficos\nde Metano y pH
+deactivate MP
+
+== Exportación de Datos ==
+
+U -> MP : Presiona "CSV"
+activate MP
+MP -> MC : exportToCsv()
+activate MC
+MC -> MC : Generar CSV:\nTimestamp, Metano, pH
+MC -> MC : writeAsString()\nen directorio temporal
+MC -> MC : Share.shareXFiles()\nabrir diálogo de\ncompartir
+MC --> U : Archivo CSV\ncompartido
+deactivate MC
+deactivate MP
+
+@enduml

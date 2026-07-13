@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Monitoreo Autónomo — Biodigester Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #0f172a;
+      --color-secondary: #334155;
+      --color-accent: #0ea5e9;
+      --color-accent-light: #e0f2fe;
+      --color-surface: #ffffff;
+      --color-surface-alt: #f8fafc;
+      --color-border: #e2e8f0;
+      --color-border-strong: #cbd5e1;
+      --color-text: #1e293b;
+      --color-text-muted: #64748b;
+      --color-code-bg: #1e293b;
+      --color-code-text: #e2e8f0;
+      --color-red: #ef4444;
+      --color-green: #22c55e;
+      --color-yellow: #eab308;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --max-width: 920px;
+      --sidebar-width: 280px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--color-text);
+      background: var(--color-surface-alt);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Sidebar Navigation ── */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      overflow-y: auto;
+      padding: 2rem 1.25rem;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+
+    .sidebar-subtitle {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .sidebar nav a {
+      display: block;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.82rem;
+      color: var(--color-secondary);
+      text-decoration: none;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      transition: all 0.15s ease;
+      line-height: 1.4;
+    }
+
+    .sidebar nav a:hover {
+      background: var(--color-accent-light);
+      color: var(--color-accent);
+    }
+
+    .sidebar nav a.section-link {
+      font-weight: 600;
+      margin-top: 0.75rem;
+      color: var(--color-primary);
+      font-size: 0.85rem;
+    }
+
+    .sidebar nav a.sub-link {
+      padding-left: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+    }
+
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 200;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      font-size: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* ── Main Content ── */
+    .main {
+      margin-left: var(--sidebar-width);
+      max-width: calc(var(--max-width) + 4rem);
+      padding: 3rem 2rem 4rem;
+    }
+
+    /* ── Cover / Header ── */
+    .cover {
+      text-align: center;
+      padding: 4rem 2rem 3rem;
+      margin-bottom: 3rem;
+      background: var(--color-surface);
+      border-radius: 16px;
+      border: 1px solid var(--color-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .cover-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      background: var(--color-accent-light);
+      padding: 0.35rem 1rem;
+      border-radius: 100px;
+      margin-bottom: 1.5rem;
+    }
+
+    .cover h1 {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+
+    .cover h2 {
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--color-text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .cover-meta {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      color: var(--color-secondary);
+    }
+
+    .cover-meta span { display: flex; align-items: center; gap: 0.4rem; }
+
+    .cover-divider {
+      width: 60px;
+      height: 3px;
+      background: var(--color-accent);
+      border-radius: 2px;
+      margin: 2rem auto 0;
+    }
+
+    /* ── Sections ── */
+    section {
+      background: var(--color-surface);
+      border-radius: 12px;
+      border: 1px solid var(--color-border);
+      padding: 2.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    h2 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--color-accent);
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin: 2rem 0 0.75rem;
+    }
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-secondary);
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    h5 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      margin: 1.25rem 0 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    p { margin-bottom: 1rem; }
+
+    /* ── Lists ── */
+    ul, ol {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+      line-height: 1.65;
+    }
+
+    li strong { color: var(--color-primary); }
+
+    /* ── Code ── */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      color: var(--color-red);
+    }
+
+    pre {
+      background: var(--color-code-bg);
+      color: var(--color-code-text);
+      padding: 1.25rem 1.5rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      border: 1px solid #334155;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    .code-comment { color: #94a3b8; }
+    .code-keyword { color: #7dd3fc; }
+    .code-string { color: #86efac; }
+
+    /* ── Tables ── */
+    .table-wrapper {
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--color-border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+    }
+
+    td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:nth-child(even) { background: var(--color-surface-alt); }
+
+    td code {
+      font-size: 0.8em;
+      background: var(--color-accent-light);
+      border-color: transparent;
+      color: var(--color-accent);
+      font-weight: 500;
+    }
+
+    /* ── Callout / Diagram Reference ── */
+    .diagram-ref {
+      background: linear-gradient(135deg, var(--color-accent-light), #f0f9ff);
+      border-left: 4px solid var(--color-accent);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.25rem 0;
+      font-size: 0.88rem;
+      color: var(--color-secondary);
+    }
+
+    .diagram-ref strong { color: var(--color-accent); }
+
+    .callout {
+      background: #fefce8;
+      border-left: 4px solid var(--color-yellow);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.25rem 0;
+      font-size: 0.88rem;
+    }
+
+    .callout-security {
+      background: #fef2f2;
+      border-left-color: var(--color-red);
+    }
+
+    /* ── Placeholder Images ── */
+    .placeholder-img {
+      background: var(--color-surface-alt);
+      border: 2px dashed var(--color-border-strong);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: 0.88rem;
+      margin: 1.25rem 0;
+      font-style: italic;
+    }
+
+    /* ── Comparison Highlight ── */
+    .comparison-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-flutter { background: var(--color-accent-light); color: var(--color-accent); }
+    .badge-kotlin { background: #fce7f3; color: #db2777; }
+
+    /* ── Conclusion Cards ── */
+    .conclusion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+
+    .conclusion-card {
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+
+    .conclusion-card .number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--color-accent);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .conclusion-card h4 {
+      margin: 0 0 0.4rem;
+      font-size: 0.95rem;
+      color: var(--color-primary);
+    }
+
+    .conclusion-card p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── References ── */
+    .references ol {
+      padding-left: 1.5rem;
+      counter-reset: ref-counter;
+      list-style: none;
+    }
+
+    .references li {
+      counter-increment: ref-counter;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 0.88rem;
+    }
+
+    .references li::before {
+      content: "[" counter(ref-counter) "] ";
+      font-weight: 600;
+      color: var(--color-accent);
+    }
+
+    .references a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .references a:hover { text-decoration: underline; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border);
+      margin-top: 2rem;
+    }
+
+    /* ── Print Styles ── */
+    @media print {
+      .sidebar, .sidebar-toggle { display: none !important; }
+      .main { margin-left: 0; padding: 0; max-width: 100%; }
+      section { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+      .cover { page-break-after: always; }
+      body { background: white; font-size: 11pt; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.12); }
+      .sidebar-toggle { display: block; }
+      .main { margin-left: 0; padding: 4rem 1.25rem 2rem; }
+      .cover h1 { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 640px) {
+      .cover { padding: 2.5rem 1.25rem 2rem; }
+      .cover-meta { flex-direction: column; gap: 0.5rem; }
+      section { padding: 1.5rem; }
+      .conclusion-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Scrollbar ── */
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile sidebar toggle -->
+  <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Menú">☰</button>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Biodigester Mobile</div>
+    <div class="sidebar-subtitle">Documento Técnico — 2025</div>
+    <nav>
+      <a href="#resumen" class="section-link">Resumen</a>
+      <a href="#sistema-monitoreo" class="section-link">3.1 Sistema de Monitoreo</a>
+      <a href="#diseno" class="section-link">3.2 Diseño de la Aplicación</a>
+      <a href="#objetivo" class="sub-link">3.2.1 Objetivo</a>
+      <a href="#flujo-navegacion" class="sub-link">3.2.2 Flujo de Navegación</a>
+      <a href="#almacenamiento" class="sub-link">3.2.3 Almacenamiento</a>
+      <a href="#servicios-rest" class="sub-link">3.2.4 Servicios REST</a>
+      <a href="#dependencias" class="sub-link">3.2.5 Dependencias</a>
+      <a href="#implementacion" class="section-link">3.3 Implementación</a>
+      <a href="#arquitectura" class="sub-link">3.3.1 Arquitectura</a>
+      <a href="#detalle-paquetes" class="sub-link">3.3.2 Detalle de Paquetes</a>
+      <a href="#seleccion-flutter" class="section-link">3.4 Selección de Flutter</a>
+      <a href="#configuracion" class="section-link">3.5 Configuración</a>
+      <a href="#pruebas" class="section-link">3.6 Pruebas</a>
+      <a href="#despliegue" class="section-link">3.7 Despliegue</a>
+      <a href="#capturas" class="section-link">3.8 Capturas</a>
+      <a href="#conclusiones" class="section-link">4. Conclusiones</a>
+      <a href="#referencias" class="section-link">Referencias</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Cover -->
+    <header class="cover" id="top">
+      <div class="cover-badge">Trabajo de Grado — Ingeniería Electrónica</div>
+      <h1>Sistema de Monitoreo Autónomo del Control para Procesos de Digestión Anaerobia con Transmisión de Datos en Tiempo Real</h1>
+      <h2>Implementación de la Aplicación Móvil Multiplataforma con Flutter</h2>
+      <div class="cover-meta">
+        <span>📄 Universidad de Ibagué</span>
+        <span>👤 [Nombre del Autor]</span>
+        <span>📅 2025</span>
+      </div>
+      <div class="cover-divider"></div>
+    </header>
+
+    <!-- Resumen -->
+    <section id="resumen">
+      <h2>Resumen</h2>
+      <p>El presente documento describe el diseño, desarrollo e implementación de la aplicación móvil multiplataforma <strong>"Biodigester Mobile"</strong>, desarrollada en el framework Flutter. Esta aplicación forma parte de un sistema de monitoreo autónomo para procesos de digestión anaerobia, permitiendo la visualización en tiempo real de variables críticas como la concentración de metano (CH₄) y el nivel de pH.</p>
+      <p>La aplicación se comunica con la plataforma <strong>ThingSpeak</strong> para la adquisición de datos provenientes de sensores IoT y utiliza <strong>Supabase</strong> como backend para la autenticación de usuarios y el almacenamiento persistente de los registros. El desarrollo se realizó utilizando arquitectura feature-based con gestión de estado mediante <strong>Riverpod</strong>, garantizando escalabilidad, mantenibilidad y un rendimiento óptimo en múltiples plataformas (Android, iOS, Web).</p>
+    </section>
+
+    <!-- 3.1 Sistema de Monitoreo -->
+    <section id="sistema-monitoreo">
+      <h2>3.1 Sistema de Monitoreo</h2>
+      <p>El sistema de monitoreo está compuesto por una red de sensores IoT que capturan variables críticas del proceso de digestión anaerobia. Estos sensores transmiten los datos de manera inalámbrica a la plataforma ThingSpeak, que actúa como intermediario entre los dispositivos físicos y la aplicación móvil.</p>
+      <p>Las variables monitoreadas son:</p>
+      <ul>
+        <li><strong>Metano (CH₄):</strong> Concentración en partes por millón (ppm), indicadora de la eficiencia del proceso de biodigestión.</li>
+        <li><strong>pH:</strong> Nivel de acidez o alcalinidad del biodigestor, parámetro fundamental para el mantenimiento de las condiciones óptimas de las bacterias metanogénicas.</li>
+      </ul>
+      <p>Los datos son capturados por los sensores y transmitidos al canal de ThingSpeak con ID <code>2621081</code>, el cual almacena los registros en campos individuales (<code>field1</code> para metano, <code>field2</code> para pH) con marcas de tiempo en formato ISO 8601.</p>
+
+      <div class="diagram-ref">
+        <strong>📎 Referencia: FLUJO-DATOS</strong> — Diagrama de secuencia que ilustra el flujo completo de datos desde los sensores hasta la visualización en la interfaz de usuario.
+        <br><small><code>docs/diagrams/FLUJO-DATOS.puml</code></small>
+      </div>
+    </section>
+
+    <!-- 3.2 Diseño -->
+    <section id="diseno">
+      <h2>3.2 Diseño de la Aplicación Multiplataforma con Flutter</h2>
+      <p>A continuación, se presenta el diseño y desarrollo de la aplicación móvil multiplataforma teniendo en cuenta el objetivo del proyecto, alcance, escalabilidad, rendimiento y optimización de la aplicación.</p>
+
+      <h3 id="objetivo">3.2.1 Objetivo del Aplicativo Móvil</h3>
+      <p>El desarrollo de la aplicación tiene como objetivo obtener los datos en tiempo real de las variables enviadas por el sistema de monitoreo al servidor web, lo que agiliza el análisis de datos, previene errores en el sistema de control de digestión anaerobia, facilita la comunicación entre los investigadores y permite un acceso rápido e inmediato a la información.</p>
+
+      <h4>Splash (Inicio de la aplicación)</h4>
+      <ul>
+        <li>El usuario visualiza por 2 segundos el logo de la aplicación (Logo de la Universidad de Ibagué).</li>
+      </ul>
+
+      <h4>Login</h4>
+      <ul>
+        <li>El usuario puede ingresar con el correo electrónico y contraseña a la aplicación.</li>
+        <li>La autenticación se realiza de forma segura a través de <strong>Supabase Auth</strong>.</li>
+        <li>El sistema permite el modo de desarrollo con autenticación omitida (<code>BYPASS_AUTH</code>).</li>
+      </ul>
+
+      <h4>Registro</h4>
+      <ul>
+        <li>El usuario puede registrarse a la aplicación por medio de un formulario donde se requerirá el correo electrónico y una contraseña.</li>
+        <li>Tras el registro exitoso, se muestra un mensaje de confirmación y se redirige al usuario a la pantalla de login.</li>
+      </ul>
+
+      <h4>Funciones de la Aplicación</h4>
+      <ul>
+        <li>Al ingresar a la aplicación, el usuario puede realizar la <strong>ingestión</strong> de los últimos registros obtenidos del sistema de monitoreo desde ThingSpeak.</li>
+        <li>El usuario puede visualizar los datos obtenidos a través de <strong>gráficas interactivas</strong> de diagramas de área (AreaSeries) para las variables de metano y pH.</li>
+        <li>El usuario puede <strong>filtrar</strong> los datos obtenidos seleccionando un rango de fechas personalizado (desde/hasta) con un selector de fecha y hora con pestañas.</li>
+        <li>El usuario puede <strong>exportar</strong> los datos filtrados en un archivo de formato CSV y compartirlo a través de las aplicaciones instaladas en el dispositivo.</li>
+        <li>El usuario puede visualizar <strong>información contextual</strong> sobre el sistema de monitoreo dentro de la aplicación.</li>
+        <li>El usuario puede diferenciar registros que no cumplan con el funcionamiento normal del sistema de control de manera visual a través de las gráficas.</li>
+      </ul>
+
+      <h4>Funciones del Usuario dentro de la Aplicación</h4>
+      <ul>
+        <li>El usuario puede iniciar y cerrar sesión con diferentes cuentas previamente registradas.</li>
+        <li>El usuario puede compartir archivos CSV exportados por aplicaciones que seleccione (Correo electrónico, WhatsApp, etc.).</li>
+        <li>El usuario puede hacer zoom y desplazarse interactivamente en las gráficas para analizar períodos específicos.</li>
+      </ul>
+
+      <h3 id="flujo-navegacion">3.2.2 Flujo de Navegación de la Aplicación</h3>
+      <p>A partir de las historias de usuario se diseñó el flujo de navegación de la aplicación. El flujo tiene como base una experiencia sencilla e intuitiva para usuarios que tengan conocimiento de uso de aplicaciones móviles.</p>
+
+      <div class="diagram-ref">
+        <strong>📎 Referencia: FLUJO-NAVEGACION</strong> — Diagrama de flujo que muestra la navegación entre las pantallas de Login y Registro.
+        <br><small><code>docs/diagrams/FLUJO-NAVEGACION.puml</code></small>
+      </div>
+
+      <p>El flujo de navegación inicial está compuesto por dos pantallas de navegación:</p>
+      <ul>
+        <li><strong>Pantalla de Login:</strong> Corresponde al ingreso con el correo electrónico y la contraseña del usuario previamente registrado. Al ingresar con las credenciales, el usuario es dirigido a la pantalla principal de la aplicación.</li>
+        <li><strong>Pantalla de Registro:</strong> Corresponde al formulario para poder ingresar a la aplicación, donde se piden datos básicos al usuario (correo electrónico y contraseña).</li>
+      </ul>
+
+      <div class="diagram-ref">
+        <strong>📎 Referencia: FLUJO-PRINCIPAL</strong> — Diagrama de componentes que muestra la navegación principal de la aplicación con sus dos pestañas.
+        <br><small><code>docs/diagrams/FLUJO-PRINCIPAL.puml</code></small>
+      </div>
+
+      <p>El flujo de navegación principal está compuesto por un <strong>BottomNavigationBar</strong> con dos pestañas:</p>
+      <ul>
+        <li><strong>Pantalla 1 (Ingestion - HomePage):</strong> Muestra dos secciones principales: "Ingerir últimos registros" y "Backfill hacia atrás". La primera permite descargar los últimos 20 registros desde ThingSpeak y guardarlos en Supabase.</li>
+        <li><strong>Pantalla 2 (Monitoreo - MonitorPage):</strong> Contiene un selector de rango de fechas, dos gráficas interactivas (Metano en rojo, pH en azul), y botones para restablecer filtros, refrescar datos y exportar a CSV.</li>
+      </ul>
+
+      <h3 id="almacenamiento">3.2.3 Almacenamiento de Datos</h3>
+      <p>Los datos recolectados por el sistema de monitoreo se almacenan en dos plataformas complementarias:</p>
+
+      <h4>ThingSpeak (Almacenamiento IoT)</h4>
+      <p>Los datos provenientes de los sensores se almacenan en el canal "Monitoring system" de la plataforma ThingSpeak, un canal con acceso privado (requiere llave de API) que cuenta con campos de datos para las variables del sistema de monitoreo.</p>
+
+      <h4>Supabase (Almacenamiento de Aplicación)</h4>
+      <p>Para el almacenamiento de datos de la aplicación, se utiliza Supabase, que proporciona:</p>
+      <ul>
+        <li><strong>Autenticación de usuarios:</strong> Servicio de autenticación con email y contraseña, integrado directamente con la aplicación Flutter.</li>
+        <li><strong>Base de datos PostgreSQL:</strong> Almacenamiento persistente de los datos ingeridos desde ThingSpeak.</li>
+      </ul>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>channel_id</code></td><td>integer</td><td>ID del canal de ThingSpeak</td></tr>
+            <tr><td><code>entry_id</code></td><td>integer</td><td>ID del registro en ThingSpeak</td></tr>
+            <tr><td><code>ts_iso</code></td><td>timestamp</td><td>Marca de tiempo en formato ISO 8601</td></tr>
+            <tr><td><code>field1</code></td><td>double</td><td>Valor de Metano (ppm)</td></tr>
+            <tr><td><code>field2</code></td><td>double</td><td>Valor de pH</td></tr>
+            <tr><td><code>field3</code> — <code>field8</code></td><td>double</td><td>Campos adicionales reservados</td></tr>
+            <tr><td><code>raw</code></td><td>jsonb</td><td>Datos originales JSON de ThingSpeak</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="servicios-rest">3.2.4 Creación de Servicios REST</h3>
+
+      <h4>API's de ThingSpeak</h4>
+      <p>La plataforma ThingSpeak ofrece los servicios necesarios para poder leer, escribir, eliminar y actualizar los datos del canal emitidos por el sistema de monitoreo.</p>
+
+      <h5>Obtener los últimos registros del canal</h5>
+      <pre><code><span class="code-keyword">GET</span> https://api.thingspeak.com/channels/<span class="code-string">&lt;channel_Id&gt;</span>/feeds.json
+    ?api_key=<span class="code-string">&lt;api_key&gt;</span>
+    &amp;results=<span class="code-string">&lt;numberOfResults&gt;</span>
+    &amp;sort=desc
+    &amp;timezone=<span class="code-string">&lt;continent/city&gt;</span></code></pre>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Descripción</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>channel_Id</code></td><td>ID del canal. En este proyecto: <code>2621081</code></td></tr>
+            <tr><td><code>api_key</code></td><td>Llave de identificación para acceder al canal</td></tr>
+            <tr><td><code>results</code></td><td>Número de registros a obtener (máximo 8000)</td></tr>
+            <tr><td><code>sort</code></td><td>Orden: <code>desc</code> (descendente) o <code>asc</code> (ascendente)</td></tr>
+            <tr><td><code>timezone</code></td><td>Zona horaria. En este proyecto: <code>America/Asuncion</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h5>Obtener el último entry_id almacenado</h5>
+      <pre><code><span class="code-keyword">SELECT</span> entry_id
+<span class="code-keyword">FROM</span> thingspeak_feed
+<span class="code-keyword">WHERE</span> channel_id = <span class="code-string">&lt;channel_id&gt;</span>
+<span class="code-keyword">ORDER BY</span> entry_id <span class="code-keyword">DESC</span>
+<span class="code-keyword">LIMIT</span> 1;</code></pre>
+
+      <div class="diagram-ref">
+        <strong>📎 Referencia: FLUJO-DATOS</strong> — Diagrama de secuencia que muestra el proceso completo de ingestión de datos.
+        <br><small><code>docs/diagrams/FLUJO-DATOS.puml</code></small>
+      </div>
+
+      <h4>API's de Supabase</h4>
+      <ul>
+        <li><strong>Autenticación:</strong> <code>signInWithPassword(email, password)</code> y <code>signUp(email, password)</code> para gestión de sesiones de usuario.</li>
+        <li><strong>Consulta de datos:</strong> <code>select('ts_iso, field1, field2').gte('ts_iso', start).lte('ts_iso', end).order('ts_iso')</code></li>
+        <li><strong>Inserción de datos:</strong> <code>upsert(rows)</code> para insertar o actualizar registros en la tabla <code>thingspeak_feed</code>.</li>
+        <li><strong>Consulta de máximo entry_id:</strong> <code>select('entry_id').order('entry_id', ascending: false).limit(1)</code></li>
+      </ul>
+
+      <h3 id="dependencias">3.2.5 Dependencias y Librerías Utilizadas</h3>
+      <p>La comunidad de desarrolladores de Flutter ha creado paquetes y SDK's que facilitan la implementación de funciones y agilizan el desarrollo de aplicaciones móviles multiplataforma.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Paquete</th><th>Versión</th><th>Función</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>supabase_flutter</strong></td><td>^2.8.1</td><td>SDK oficial de Supabase. Autenticación de usuarios y almacenamiento en PostgreSQL en tiempo real.</td></tr>
+            <tr><td><strong>flutter_riverpod</strong></td><td>^3.1.0</td><td>Framework de gestión de estado con tipado estático, inyección de dependencias y testing simplificado.</td></tr>
+            <tr><td><strong>riverpod_annotation</strong></td><td>^4.0.0</td><td>Anotaciones para generación automática de código con <code>build_runner</code>.</td></tr>
+            <tr><td><strong>syncfusion_flutter_charts</strong></td><td>^32.2.7</td><td>Gráficos interactivos de alto rendimiento con zoom, paneo y tooltips.</td></tr>
+            <tr><td><strong>csv</strong></td><td>^6.0.0</td><td>Conversión de datos tabulares a formato CSV.</td></tr>
+            <tr><td><strong>path_provider</strong></td><td>^2.1.3</td><td>Acceso a directorios del sistema operativo.</td></tr>
+            <tr><td><strong>share_plus</strong></td><td>^10.1.4</td><td>Compartir archivos a través de aplicaciones del dispositivo.</td></tr>
+            <tr><td><strong>http</strong></td><td>^1.2.2</td><td>Cliente HTTP para peticiones REST.</td></tr>
+            <tr><td><strong>intl</strong></td><td>^0.19.0</td><td>Formateo de fechas y números according a la localización.</td></tr>
+            <tr><td><strong>flutter_dotenv</strong></td><td>^5.1.0</td><td>Carga de variables de entorno desde archivos <code>.env</code>.</td></tr>
+            <tr><td><strong>cupertino_icons</strong></td><td>^1.0.8</td><td>Iconos estilo iOS para la interfaz.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3.3 Implementación -->
+    <section id="implementacion">
+      <h2>3.3 Implementación de la Aplicación Móvil</h2>
+      <p>La aplicación fue desarrollada en el framework <strong>Flutter</strong> utilizando el lenguaje de programación <strong>Dart</strong>. Actualmente la aplicación cuenta con <strong>12 clases</strong> organizadas en una arquitectura feature-based que separa claramente la lógica de negocio de la presentación.</p>
+
+      <div class="diagram-ref">
+        <strong>📎 Referencia: ARQUITECTURA-PAQUETES</strong> — Diagrama de paquetes que muestra la arquitectura completa de la aplicación con sus dependencias.
+        <br><small><code>docs/diagrams/ARQUITECTURA-PAQUETES.puml</code></small>
+      </div>
+
+      <h3 id="arquitectura">3.3.1 Arquitectura Feature-Based</h3>
+      <p>La implementación está dividida en dos carpetas principales:</p>
+      <ul>
+        <li><strong>core/</strong>: Contiene los servicios compartidos y widgets reutilizables a través de toda la aplicación.</li>
+        <li><strong>features/</strong>: Contiene las funcionalidades organizadas por dominio (auth, home, monitoring), cada una con su estructura interna de presentación y datos.</li>
+      </ul>
+
+      <div class="placeholder-img">
+        📷 Ilustración 7: Arquitectura de los paquetes de la aplicación móvil (Fuente: Autores)
+      </div>
+
+      <p>Cada una de las carpetas contiene más paquetes y clases que realizan funciones específicas con la más mínima responsabilidad posible.</p>
+
+      <div class="placeholder-img">
+        📷 Ilustración 8: Arquitectura detallada de paquetes de la aplicación móvil (Fuente: Autores)
+      </div>
+
+      <h3 id="detalle-paquetes">3.3.2 Detalle de Paquetes</h3>
+
+      <h4>core/services/</h4>
+      <ul>
+        <li><strong>SupabaseService:</strong> Clase estática que inicializa y gestiona la conexión con Supabase. Proporciona acceso al cliente, al usuario actual, a la sesión actual y al modo de desarrollo (BYPASS_AUTH).</li>
+        <li><strong>ThingSpeakService:</strong> Clase que implementa la lógica de ingestión de datos. Contiene <code>getMaxEntryId()</code> y <code>ingestLatestFeeds()</code> para descargar, filtrar e insertar registros.</li>
+      </ul>
+
+      <h4>core/widgets/</h4>
+      <ul>
+        <li><strong>ShadCard:</strong> Widget reutilizable de tarjeta con estilo inspirado en ShadCN. Soporta título, subtítulo y un widget hijo como contenido.</li>
+      </ul>
+
+      <h4>features/auth/presentation/pages/</h4>
+      <ul>
+        <li><strong>LoginPage:</strong> Pantalla de inicio de sesión con validación de credenciales a través de Supabase Auth, indicadores de carga y mensajes de error.</li>
+        <li><strong>SignupPage:</strong> Pantalla de registro con campos de email y contraseña. Muestra un SnackBar de confirmación y redirige al login.</li>
+      </ul>
+
+      <h4>features/home/presentation/pages/</h4>
+      <ul>
+        <li><strong>HomePage:</strong> Pantalla principal de "Ingestion". Contiene "Ingerir últimos registros" y "Backfill hacia atrás". Muestra resultados con indicadores visuales.</li>
+      </ul>
+
+      <h4>features/monitoring/</h4>
+      <ul>
+        <li><strong>MonitorRepository:</strong> Comunicación con Supabase para consulta de datos filtrados por rango de fechas.</li>
+        <li><strong>MonitorController:</strong> Controlador Riverpod que gestiona el ciclo de vida de los datos. Mantiene <code>MonitorDataState</code> con filtro activo y datos obtenidos.</li>
+        <li><strong>MonitorPage:</strong> Selector de fechas, gráficas AreaSeries para Metano y pH, botones para restablecer, refrescar y exportar CSV.</li>
+        <li><strong>TabbedDateTimePickerDialog:</strong> Diálogo personalizado con pestañas Fecha/Hora usando <code>CalendarDatePicker</code> y <code>ListWheelScrollView</code>.</li>
+      </ul>
+
+      <div class="diagram-ref">
+        <strong>📎 Referencia: CICLO-VIDA-ESTADO</strong> — Diagrama de estados que muestra el ciclo de vida del MonitorController con sus transiciones.
+        <br><small><code>docs/diagrams/CICLO-VIDA-ESTADO.puml</code></small>
+      </div>
+    </section>
+
+    <!-- 3.4 Selección de Flutter -->
+    <section id="seleccion-flutter">
+      <h2>3.4 Selección de Flutter como Framework de Desarrollo</h2>
+      <p>La selección del framework de desarrollo fue una decisión técnica fundamental que impacta directamente en la mantenibilidad, escalabilidad y alcance de la aplicación. Tras evaluar múltiples alternativas, se seleccionó <strong>Flutter</strong> por las siguientes razones:</p>
+
+      <h4>Multiplataforma Nativo</h4>
+      <p>Flutter permite compilar una única base de código para múltiples plataformas (Android, iOS, Web, Windows, macOS y Linux) sin sacrificar el rendimiento. A diferencia de soluciones basadas en puentes (React Native) o compilación cruzada (Xamarin), Flutter renderiza cada pixel de la interfaz directamente mediante su propio motor de renderizado (Skia/Impeller).</p>
+
+      <h4>Rendimiento Comparable al Nativo</h4>
+      <p>Flutter compila a código ARM nativo mediante Dart AOT (Ahead-of-Time), alcanzando rendimiento comparable al de aplicaciones desarrolladas nativamente en Kotlin o Swift. El framework permite alcanzar <strong>60/120 FPS</strong> en la mayoría de dispositivos.</p>
+
+      <h4>Gestión de Estado Avanzada con Riverpod</h4>
+      <p>La adopción de Riverpod proporciona tipado estático completo, inyección de dependencias automática, caching de datos y testing simplificado. A diferencia del patrón Provider original, Riverpod elimina los problemas de contexto y permite un código más limpio y testable.</p>
+
+      <h4>Hot Reload y Productividad</h4>
+      <p>La funcionalidad de Hot Reload permite la modificación del código en tiempo real sin reiniciar la aplicación, reduciendo significativamente el tiempo de desarrollo y depuración.</p>
+
+      <h4>Ecosistema de Paquetes</h4>
+      <p>Flutter cuenta con más de 40,000 paquetes en pub.dev, cubriendo desde gráficos interactivos hasta integración con servicios en la nube.</p>
+
+      <h4>Material Design 3</h4>
+      <p>Flutter incluye soporte nativo para Material Design 3, proporcionando componentes de interfaz modernos y consistentes. La aplicación utiliza <code>ColorScheme.fromSeed()</code> para garantizar coherencia visual.</p>
+
+      <h4>Comparativa con Android Nativo (Kotlin)</h4>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Característica</th>
+              <th><span class="comparison-badge badge-flutter">Flutter</span></th>
+              <th><span class="comparison-badge badge-kotlin">Android Nativo (Kotlin)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Plataforma</td><td>Multiplataforma</td><td>Solo Android</td></tr>
+            <tr><td>Lenguaje</td><td>Dart</td><td>Kotlin</td></tr>
+            <tr><td>Rendimiento</td><td>Nativo (AOT)</td><td>Nativo</td></tr>
+            <tr><td>Hot Reload</td><td>Sí</td><td>Limitado (Live Edit)</td></tr>
+            <tr><td>UI Rendering</td><td>Propio (Skia/Impeller)</td><td>Componentes nativos</td></tr>
+            <tr><td>Gestión de Estado</td><td>Riverpod, Bloc, Provider</td><td>ViewModel, LiveData</td></tr>
+            <tr><td>Curva de Aprendizaje</td><td>Moderada</td><td>Alta (para multiplataforma)</td></tr>
+            <tr><td>Testing</td><td>Integrado (flutter_test)</td><td>JUnit, Espresso</td></tr>
+            <tr><td>Comunidad</td><td>Creciente (&gt;40k paquetes)</td><td>Establecida</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La decisión de utilizar Flutter se justifica por la posibilidad de extender la aplicación a otras plataformas (iOS, Web) en el futuro sin un retrabajo significativo, manteniendo un rendimiento comparable al nativo.</p>
+    </section>
+
+    <!-- 3.5 Configuración -->
+    <section id="configuracion">
+      <h2>3.5 Configuración del Entorno</h2>
+      <p>La aplicación utiliza variables de entorno para la configuración sensible, evitando la exposición de credenciales en el código fuente. La configuración se realiza a través del archivo <code>.env</code> ubicado en la raíz del proyecto.</p>
+
+      <h4>Variables de Entorno</h4>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Descripción</th><th>Valor de Ejemplo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>SUPABASE_URL</code></td><td>URL del proyecto Supabase</td><td><code>https://xxx.supabase.co</code></td></tr>
+            <tr><td><code>SUPABASE_ANON_KEY</code></td><td>Clave anónima de Supabase</td><td><code>sb_publishable_xxx</code></td></tr>
+            <tr><td><code>THINGSPEAK_CHANNEL_ID</code></td><td>ID del canal de ThingSpeak</td><td><code>2621081</code></td></tr>
+            <tr><td><code>THINGSPEAK_API_KEY</code></td><td>Clave de API de ThingSpeak</td><td><code>DS0O5JWOPSREYKM7</code></td></tr>
+            <tr><td><code>THINGSPEAK_TIMEZONE</code></td><td>Zona horaria para registros</td><td><code>America/Asuncion</code></td></tr>
+            <tr><td><code>BYPASS_AUTH</code></td><td>Omitir autenticación (desarrollo)</td><td><code>true</code> / <code>false</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Proceso de Configuración</h4>
+      <ol>
+        <li>Clonar el repositorio del proyecto.</li>
+        <li>Copiar el archivo <code>.env.template</code> como <code>.env</code>.</li>
+        <li>Completar las variables de entorno con las credenciales correspondientes.</li>
+        <li>Ejecutar <code>flutter pub get</code> para instalar dependencias.</li>
+        <li>Ejecutar <code>flutter run</code> para iniciar la aplicación.</li>
+      </ol>
+
+      <div class="callout callout-security">
+        <strong>🔒 Consideraciones de Seguridad:</strong>
+        <ul style="margin-bottom: 0;">
+          <li>El archivo <code>.env</code> está incluido en <code>.gitignore</code> para evitar su commit al repositorio.</li>
+          <li>Las credenciales de Supabase y ThingSpeak nunca se exponen en el código fuente.</li>
+          <li>En producción, se recomienda utilizar variables de entorno del sistema o un gestor de secretos.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3.6 Pruebas -->
+    <section id="pruebas">
+      <h2>3.6 Pruebas</h2>
+      <p>La aplicación incluye una configuración de testing basada en <code>flutter_test</code>, el framework de pruebas integrado en Flutter.</p>
+
+      <h4>Estrategia de Pruebas</h4>
+      <ul>
+        <li><strong>Pruebas Unitarias:</strong> Verificación de la lógica de negocio en aislamiento, incluyendo servicios de Supabase y ThingSpeak, conversión de datos y generación de CSV.</li>
+        <li><strong>Pruebas de Widget:</strong> Validación de la interfaz de usuario y su comportamiento ante interacciones del usuario.</li>
+        <li><strong>Pruebas de Integración:</strong> Verificación del flujo completo de datos desde la ingestión hasta la visualización.</li>
+      </ul>
+
+      <h4>Comandos de Prueba</h4>
+      <pre><code><span class="code-comment"># Ejecutar todas las pruebas</span>
+flutter test
+
+<span class="code-comment"># Ejecutar pruebas con cobertura de código</span>
+flutter test --coverage
+
+<span class="code-comment"># Ejecutar pruebas en modo verbose</span>
+flutter test --reporter expanded</code></pre>
+
+      <h4>Herramientas de Calidad de Código</h4>
+      <pre><code><span class="code-comment"># Ejecutar análisis estático</span>
+flutter analyze
+
+<span class="code-comment"># Regenerar código generado</span>
+dart run build_runner build --delete-conflicting-outputs</code></pre>
+    </section>
+
+    <!-- 3.7 Despliegue -->
+    <section id="despliegue">
+      <h2>3.7 Despliegue</h2>
+      <p>La aplicación Flutter puede ser desplegada en múltiples plataformas desde una única base de código.</p>
+
+      <h4>Android (APK)</h4>
+      <pre><code><span class="code-comment"># Build de release APK</span>
+flutter build apk --release
+
+<span class="code-comment"># Build de app bundle (para Google Play)</span>
+flutter build appbundle --release</code></pre>
+      <p>El APK se encuentra en <code>build/app/outputs/flutter-apk/app-release.apk</code>.</p>
+
+      <h4>iOS (IPA)</h4>
+      <pre><code><span class="code-comment"># Build de release iOS</span>
+flutter build ios --release
+
+<span class="code-comment"># Generar archivo IPA para distribución</span>
+flutter build ipa --release</code></pre>
+      <p>El archivo IPA se genera en <code>build/ios/ipa/</code>. Se requiere cuenta de desarrollador Apple.</p>
+
+      <h4>Web</h4>
+      <pre><code><span class="code-comment"># Build de release web</span>
+flutter build web --release</code></pre>
+      <p>Los archivos se generan en <code>build/web/</code> y pueden desplegarse en Firebase Hosting, Netlify o GitHub Pages.</p>
+
+      <h4>CI/CD (Opcional)</h4>
+      <ol>
+        <li>Análisis estático (<code>flutter analyze</code>).</li>
+        <li>Ejecución de pruebas (<code>flutter test</code>).</li>
+        <li>Construcción para plataformas objetivo.</li>
+        <li>Despliegue automático a tiendas o servidores.</li>
+      </ol>
+    </section>
+
+    <!-- 3.8 Capturas -->
+    <section id="capturas">
+      <h2>3.8 Capturas de Pantalla</h2>
+      <div class="placeholder-img">📷 Pantalla de Login con campos de email y contraseña</div>
+      <div class="placeholder-img">📷 Pantalla de Registro con formulario de email y contraseña</div>
+      <div class="placeholder-img">📷 Pantalla principal (Ingestion) con botón de ingesta y resultado</div>
+      <div class="placeholder-img">📷 Pantalla de Monitoreo con gráficas de Metano y pH</div>
+      <div class="placeholder-img">📷 Diálogo de selección de fecha y hora con pestañas</div>
+      <div class="placeholder-img">📷 Exportación de datos en formato CSV</div>
+    </section>
+
+    <!-- 3.9 Repositorio -->
+    <section>
+      <h2>3.9 Repositorio del Código Fuente</h2>
+      <p>El código del proyecto completo se encuentra en el repositorio de GitHub del proyecto <strong>biodigester-project</strong>, en la carpeta <code>flutter/</code>. La estructura del repositorio permite la colaboración entre múltiples desarrolladores y el versionado controlado de los cambios.</p>
+    </section>
+
+    <!-- 4. Conclusiones -->
+    <section id="conclusiones">
+      <h2>4. Conclusiones</h2>
+      <p>La aplicación móvil "Biodigester Mobile" fue desarrollada exitosamente utilizando el framework Flutter, demostrando las ventajas del desarrollo multiplataforma para aplicaciones de monitoreo en tiempo real.</p>
+
+      <div class="conclusion-grid">
+        <div class="conclusion-card">
+          <div class="number">1</div>
+          <h4>Multiplataforma Efectiva</h4>
+          <p>Flutter permite compilar una única base de código para Android, iOS y Web, reduciendo significativamente el tiempo y costo de desarrollo.</p>
+        </div>
+        <div class="conclusion-card">
+          <div class="number">2</div>
+          <h4>Rendimiento Comparable al Nativo</h4>
+          <p>La compilación AOT de Dart y el motor de renderizado Flutter proporcionan 60/120 FPS, incluso con gráficos interactivos.</p>
+        </div>
+        <div class="conclusion-card">
+          <div class="number">3</div>
+          <h4>Arquitectura Escalable</h4>
+          <p>La arquitectura feature-based con Riverpod permite una separación clara de responsabilidades y mantenimiento facilitado.</p>
+        </div>
+        <div class="conclusion-card">
+          <div class="number">4</div>
+          <h4>Integración IoT Efectiva</h4>
+          <p>La comunicación con ThingSpeak y Supabase permite la ingestión, almacenamiento y visualización de datos confiable.</p>
+        </div>
+        <div class="conclusion-card">
+          <div class="number">5</div>
+          <h4>Experiencia de Usuario Optimizada</h4>
+          <p>Gráficos interactivos, selección de fechas personalizada y exportación CSV proporcionan una experiencia completa.</p>
+        </div>
+      </div>
+
+      <h4>Trabajo Futuro</h4>
+      <ul>
+        <li>Implementar notificaciones push para alertas de valores críticos de pH y metano.</li>
+        <li>Agregar soporte para múltiples biodigestores con selección de canal.</li>
+        <li>Implementar autenticación biométrica (huella dactilar, reconocimiento facial).</li>
+        <li>Desarrollar una versión web completa con dashboard administrativo.</li>
+        <li>Integrar machine learning para predicción de tendencias y anomalías.</li>
+        <li>Implementar sistema de alertas por correo electrónico y SMS.</li>
+      </ul>
+    </section>
+
+    <!-- Referencias -->
+    <section id="referencias" class="references">
+      <h2>Referencias</h2>
+      <ol>
+        <li><a href="https://flutter.dev/docs" target="_blank">Flutter Documentation</a></li>
+        <li><a href="https://supabase.com/docs" target="_blank">Supabase Documentation</a></li>
+        <li><a href="https://www.mathworks.com/help/thingspeak/" target="_blank">ThingSpeak Documentation</a></li>
+        <li><a href="https://riverpod.dev/" target="_blank">Riverpod Documentation</a></li>
+        <li><a href="https://www.syncfusion.com/flutter-widgets/flutter-charts" target="_blank">Syncfusion Flutter Charts</a></li>
+        <li><a href="https://dart.dev/" target="_blank">Dart Programming Language</a></li>
+        <li><a href="https://m3.material.io/" target="_blank">Material Design 3</a></li>
+      </ol>
+    </section>
+
+    <footer class="footer">
+      <p>Documento generado como parte del Trabajo de Grado de Ingeniería Electrónica — Universidad de Ibagué, 2025.</p>
+    </footer>
+
+  </main>
+
+  <script>
+    // Close sidebar on link click (mobile)
+    document.querySelectorAll('.sidebar nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.remove('open');
+      });
+    });
+
+    // Close sidebar on outside click (mobile)
+    document.addEventListener('click', (e) => {
+      const sidebar = document.querySelector('.sidebar');
+      const toggle = document.querySelector('.sidebar-toggle');
+      if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+  </script>
+
+</body>
+</html>

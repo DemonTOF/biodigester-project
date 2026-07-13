@@ -1,0 +1,54 @@
+@startuml FLUJO-NAVEGACION
+title Flujo de Navegación - Login y Registro
+
+skinparam backgroundColor #FEFEFE
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityBorderColor #1565C0
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityDiamondBorderColor #F9A825
+
+|Usuario|
+start
+:Abre la aplicación;
+
+if (¿Sesión activa?) then (Sí)
+  :Redirigir a pantalla\nprincipal (Tabs);
+  detach
+else (No)
+  :Mostrar pantalla de\n**Login**;
+endif
+
+:Ingresar email\ny contraseña;
+
+if (¿Credenciales\nválidas?) then (Sí)
+  :Autenticar con\n**Supabase Auth**;
+  :Redirigir a pantalla\nprincipal (Tabs);
+  detach
+else (No)
+  :Mostrar mensaje de error;
+endif
+
+:El usuario selecciona\n"¿No tienes cuenta?";
+
+:Mostrar pantalla de\n**Registro**;
+
+:Completar formulario:\n- Email\n- Contraseña;
+
+if (¿Registro\nexitoso?) then (Sí)
+  :MostrarSnackBar:\n"Registro exitoso.\nPor favor inicia sesión.";
+  :Redirigir a pantalla\nde **Login**;
+else (No)
+  :Mostrar mensaje de error;
+  :Permanecer en\npantalla de registro;
+endif
+
+stop
+
+note right
+  **Pantallas de navegación:**
+  - Login: Email + Contraseña
+  - Registro: Email + Contraseña
+  - Tabs: Ingestion | Monitoreo
+end note
+
+@enduml

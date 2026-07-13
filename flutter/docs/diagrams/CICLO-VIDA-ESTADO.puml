@@ -1,0 +1,49 @@
+@startuml CICLO-VIDA-ESTADO
+title Ciclo de Vida del Estado - MonitorController (Riverpod)
+
+skinparam backgroundColor #FEFEFE
+skinparam stateBackgroundColor #E3F2FD
+skinparam stateBorderColor #1565C0
+skinparam stateArrowColor #2E7D32
+
+[*] --> Init : "build()"
+
+state Init : **Fecha inicio:** 03/09/2025 09:43\n**Fecha fin:** 03/09/2025 10:11\n**Acción:** fetchData(initialStart, initialEnd)
+
+Init --> Loading : "updateDateRange()\nrefresh()\nreset()"
+Init --> Data : "fetchData() →\néxito"
+Init --> Error : "fetchData() →\nexcepción"
+
+state Loading : **AsyncValue.loading()\nIndicador de progreso circular\nSe muestra mientras se\nobtienen datos de Supabase"
+
+Loading --> Data : "fetchData() →\néxito"
+Loading --> Error : "fetchData() →\nexcepción"
+
+state Data : **AsyncValue.data(MonitorDataState)**\n\n contiene:\n- **filter:** MonitorState\n  - startDate: DateTime\n  - endDate: DateTime\n- **data:** List<Map<String, dynamic>>\n  - ts_iso: String (ISO 8601)\n  - field1: double? (Metano ppm)\n  - field2: double? (pH)"
+
+state Error : **AsyncValue.error(e, stack)**\nSe muestra:\n"Error: {mensaje}"
+
+Data --> Loading : "updateDateRange()\nrefresh()\nreset()"
+Error --> Loading : "updateDateRange()\nrefresh()\nreset()"
+
+Data --> Data : "exportToCsv()\n(No modifica el estado)"
+
+note right of Init
+  **MonitorState** es inmutable
+  Usa copyWith() para
+  crear nuevas instancias
+end note
+
+note bottom of Data
+  **MonitorDataState** combina
+  el filtro activo con los
+  datos obtenidos de Supabase
+end note
+
+note left of Loading
+  Se muestra
+  CircularProgressIndicator
+  en la interfaz
+end note
+
+@enduml
